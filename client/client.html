@@ -6,7 +6,103 @@
   
   <script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.34/browser.min.js"></script>
   <script type="text/babel">
+    const handleResponse = (xhr) => {
+      const contentDiv = document.querySelector("#content");
+      contentDiv.innerHTML = "";
 
+      const b = document.createElement("b");
+
+      switch(xhr.status){
+        case 200:
+          b.innerHTML = "Success";
+          break;
+
+        case 201:
+          b.innerHTML = "Created";
+          break;
+
+        case 204:
+          b.innerHTML = "Updated";
+          break;
+
+        case 400:
+          b.innerHTML = "Bad Request";
+          break;
+
+        case 404:
+          b.innerHTML = "Resource not Found";
+          break;
+      }
+
+      contentDiv.appendChild(b);
+
+      if(xhr.response === ""){
+        return;
+      }
+      
+      const responseJSON = JSON.parse(xhr.responseText);
+
+      const p = document.createElement("p");
+      if(responseJSON.message != null){
+        p.innerHTML = responseJSON.message;
+      }
+
+      contentDiv.appendChild(p);
+    };
+
+    const ajaxRequest = (e) => {
+      var method;
+      var url;
+
+      switch(e.target.id){
+        case "nameForm":
+          method = e.target.method;
+          url = e.target.action;
+
+          url += "?";
+
+          const nameField = e.target.querySelector("#nameField");
+          url += nameField.name + "=" + nameField.value;
+
+          url += "&";
+
+          const ageField = e.target.querySelector("#ageField");
+          url += ageField.name + "=" + ageField.value;
+          break;
+
+        case "userForm":
+          method = e.target.querySelector("#methodSelect").value;
+          url = e.target.querySelector("#urlField").value;
+          break;
+
+        default:
+          console.log("Error: Invalid Form is sending a request");
+          break;
+      }
+
+      const xhr = new XMLHttpRequest();
+
+      xhr.open(method, url);
+      xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+      xhr.setRequestHeader("Accept", "application/json");
+
+      xhr.onload = () => handleResponse(xhr);
+
+      xhr.send();
+
+      e.preventDefault();
+      return false;
+    };
+
+    const init = () => {
+      const userForm = document.querySelector("#userForm");
+      userForm.addEventListener("submit", ajaxRequest);
+
+      const nameForm = document.querySelector("#nameForm");
+      nameForm.addEventListener("submit", ajaxRequest);
+    };
+
+    window.onload = init;
   </script>
 </head>
 <body>
